@@ -64,21 +64,16 @@ int main()
     world_init(&world,world_width,world_height);
 
     block_init(SCR_WIDTH/world_width, SCR_HEIGHT/world_height);   
-    world_create_block(world.matrix,world.width,1,100,0);   
     world_create_block(world.matrix,world.width,0,0,0);   
-    Block* b = world_get_block(world.matrix,world.width,1,100);
-    Block* b2 = world_get_block(world.matrix,world.width,0,0);
+    Block* b = world_get_block(world.matrix,world.width,0,0);
 
-    int y=0;
-    //TODO FIX THE GLITCH WHERE THE SIZE OF THE MATRIX IS DRIFTING
     while (!glfwWindowShouldClose(window))
     {
         glClearColor(0.1, 0.3, 0.5, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
  
         block_render(b->pos,b->id);
-        block_render(b2->pos,b2->id);
-        //block_tick(&b->pos,b->id,world.matrix,world.width,world.height);
+        block_tick(&b->pos,b->id,world.matrix,world.width,world.height);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

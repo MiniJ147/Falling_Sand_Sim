@@ -10,6 +10,12 @@ struct Size
 	U32 y;
 }size;
 
+struct Orgin_Adjust
+{
+	float x;
+	float y;
+}orgin_adjust;
+
 static Buffer* vb = (Buffer*)malloc(sizeof(Buffer));
 static Buffer* ib = (Buffer*)malloc(sizeof(Buffer));
 static U32 shader;
@@ -33,6 +39,9 @@ void block_init(U32 size_x, U32 size_y)
 	size.y=size_y;
 
 	std::cout<<size_x<<" "<<size_y<<std::endl;
+
+	orgin_adjust.x = (-1.f*global_get()->window_width/2)+size.x/2;
+	orgin_adjust.y = (global_get()->window_height/2)-size.y/2;
 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -61,8 +70,10 @@ void block_create(Block* b, Vec2f pos, U32 id)
 
 void block_tick(Vec2f* pos, U32 id, Block* matrix, U32 matrix_width, U32 matrix_height)
 {
-	if(pos->y<matrix_height-1)
-		pos->y+=1;
+	if(pos->y<matrix_height-1){
+		pos->y+=1; 
+		printf("y:%f\n",pos->y);
+	}
 }
 
 void block_render(Vec2f pos, U32 id)
@@ -77,10 +88,13 @@ void block_render(Vec2f pos, U32 id)
 
 	glUseProgram(shader);
 
-	Global_Data* g_d = global_get();
+	Global_Data* g_d = global_get();          
 
-	view = glm::translate(view, glm::vec3(((pos.x-(g_d->window_width/2))+size.x/2)+(pos.x*size.x),
-	((pos.y+(g_d->window_height/2))-size.y/2)-(pos.y*size.y),0.0f));
+	std::cout<<"y translated: "<<size.x<<std::endl;
+	std::cout<<orgin_adjust.x<<std::endl;
+	std::cout<<orgin_adjust.y<<std::endl;
+
+	view = glm::translate(view, glm::vec3(orgin_adjust.x+(pos.x*size.x), orgin_adjust.y-(pos.y*size.y), 0.f));
 
 	model = glm::scale(model, glm::vec3(size.x, size.y, 0.0f));
 
