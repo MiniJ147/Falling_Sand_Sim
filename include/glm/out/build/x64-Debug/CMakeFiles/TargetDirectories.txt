@@ -1,0 +1,5 @@
+C:/Users/Jake Paul/Desktop/C++ Projects/Fighting_Demo_Opengl/include/glm/out/build/x64-Debug/CMakeFiles/install/local.dir
+C:/Users/Jake Paul/Desktop/C++ Projects/Fighting_Demo_Opengl/include/glm/out/build/x64-Debug/CMakeFiles/install.dir
+C:/Users/Jake Paul/Desktop/C++ Projects/Fighting_Demo_Opengl/include/glm/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Users/Jake Paul/Desktop/C++ Projects/Fighting_Demo_Opengl/include/glm/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
+C:/Users/Jake Paul/Desktop/C++ Projects/Fighting_Demo_Opengl/include/glm/out/build/x64-Debug/CMakeFiles/list_install_components.dir
