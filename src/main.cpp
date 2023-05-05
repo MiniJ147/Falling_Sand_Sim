@@ -63,17 +63,59 @@ int main()
     World world = World{};
     world_init(&world,world_width,world_height);
 
-    block_init(SCR_WIDTH/world_width, SCR_HEIGHT/world_height);   
-    world_create_block(world.matrix,world.width,0,0,0);   
-    Block* b = world_get_block(world.matrix,world.width,0,0);
+    Block blocks = {};
+    block_init(&blocks, world_width, world_height, 
+                SCR_WIDTH/world_width, SCR_HEIGHT/world_height);   
+
+
+    //filling world
+    for(int y=0;y<world_height;y++)
+    {
+        for(int x=0; x<world_width;x++)
+        {
+            world_create_block(blocks,world.ids,world.width,x,y,0);
+        }
+        //std::cout<<"\n";
+    }
+
+    //world_print_matrix(world.ids,world.width,world.height);
+
+    Vec2f* test = (Vec2f*)block_get_data(blocks,world_get_id_val(world.ids,world.width,0,0),RETURN_MODE_POS);
+    //std::cout<<"Pos:"<< test->x<<" "<<test->y<<std::endl;
+
+    printf("\n\n\n");
+
+    world_print_matrix(world.ids,world.width,world.height);
+
+    //std::cout<<"Pos:"<< test->x<<" "<<test->y<<std::endl;
+
+    /*for(int i=1; i<10;i++){
+        world_swap(blocks, world.ids,world.width,0,i-1,0,i);
+        printf("\n\n");
+        world_print_matrix(world.ids,world.width,world.height);
+    }*/
+
+    //world_create_block(world.matrix,world.width,0,0,0);   
+    //Block* b = world_get_block(world.matrix,world.width,0,0);
+
+    int x = 0;
+    int y1 = 0;
+    int y2 = 1;
 
     while (!glfwWindowShouldClose(window))
     {
         glClearColor(0.1, 0.3, 0.5, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
- 
-        block_render(b->pos,b->id);
-        block_tick(&b->pos,b->id,world.matrix,world.width,world.height);
+    
+        if(y2<world.height){
+            world_swap(blocks, world.ids,world.width,x,y1,x,y2);
+            y1++;
+            y2++;
+            //world_print_matrix(world.ids,world.width,world.height);
+            //printf("\n");
+        }
+        block_render(*test);
+        //block_tick(&b->pos,b->id,world.matrix,world.width,world.height);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

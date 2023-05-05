@@ -2,6 +2,7 @@
 #include "buffer.h"
 #include "shader.h"
 #include "global.h"
+#include "world.h"
 #include <glad/glad.h>
 
 struct Size
@@ -33,7 +34,7 @@ static U32 indices[] = {
 	0,2,3
 };
 
-void block_init(U32 size_x, U32 size_y)
+void block_init(Block* block, U32 matrix_width, U32 matrix_height, U32 size_x, U32 size_y)
 {
 	size.x=size_x;
 	size.y=size_y;
@@ -59,24 +60,66 @@ void block_init(U32 size_x, U32 size_y)
 	char* pf = shader_file_parse("src/block_frag.glsl");
 
 	shader = shader_create(pv, pf);
+
+	//declaring these arrays with the size of the world
+	block->pos_size = matrix_width*matrix_height;
+	block->type_size = matrix_width*matrix_height;
+
+	block->pos = (Vec2f*)malloc(sizeof(Vec2f)*block->pos_size);
+	block->type = (U32*)malloc(sizeof(U32)*block->type_size);
+
+	//setting memory to the null identifier 
+	memset(block->pos,WORLD_NULL,sizeof(Vec2f)*block->pos_size);
+	memset(block->type,WORLD_NULL,sizeof(U32)*block->type_size);
 }
 
-void block_create(Block* b, Vec2f pos, U32 id)
+void block_swap(Block block, U32 id_1, U32 id_2)
 {
-	b->pos = pos;
-	b->id = id;
+	Vec2f* pos_1 = (Vec2f*)block_get_data(block,id_1,RETURN_MODE_POS);
+	Vec2f* pos_2 = (Vec2f*)block_get_data(block,id_2,RETURN_MODE_POS);
+	Vec2f temp = *pos_2;
+
+	*pos_2 = *pos_1;
+    *pos_1 = temp;
+	
+	U32* type_1 = (U32*)block_get_data(block,id_1,RETURN_MODE_TYPE);
+	U32* type_2 = (U32*)block_get_data(block,id_2,RETURN_MODE_TYPE);
+	U32 _temp = *type_2;
+
+	*type_2 = *type_1;
+    *type_1 = _temp;
 }
 
-
-void block_tick(Vec2f* pos, U32 id, Block* matrix, U32 matrix_width, U32 matrix_height)
+void block_create(Block block, U32 id, Vec2f pos, U32 type)
 {
-	if(pos->y<matrix_height-1){
-		pos->y+=1; 
-		printf("y:%f\n",pos->y);
+	//grabbing the ptr and setting its data to our desired data
+	*(Vec2f*)block_get_data(block,id,RETURN_MODE_POS) = pos;
+	*(U32*)block_get_data(block,id,RETURN_MODE_TYPE) = type;
+}
+
+void* block_get_data(Block block, U32 id, U32 mode)
+{
+	switch(mode)
+	{
+		case RETURN_MODE_POS:
+			return (void*)(block.pos+id);
+		break;
+
+		case RETURN_MODE_TYPE:
+			return (void*)(block.type+id);
+		break;
+
+		default:
+			return nullptr;
 	}
 }
 
-void block_render(Vec2f pos, U32 id)
+void block_tick(Vec2f* pos, U32 id, Block* matrix, U32 matrix_width, U32 matrix_height)
+{
+
+}
+
+void block_render(Vec2f pos)
 {
 	glm::mat4 model = glm::mat4(1.0f);
 	glm::mat4 view = glm::mat4(1.0f);
@@ -90,9 +133,9 @@ void block_render(Vec2f pos, U32 id)
 
 	Global_Data* g_d = global_get();          
 
-	std::cout<<"y translated: "<<size.x<<std::endl;
-	std::cout<<orgin_adjust.x<<std::endl;
-	std::cout<<orgin_adjust.y<<std::endl;
+	//std::cout<<"y translated: "<<size.x<<std::endl;
+	//std::cout<<orgin_adjust.x<<std::endl;
+	//std::cout<<orgin_adjust.y<<std::endl;
 
 	view = glm::translate(view, glm::vec3(orgin_adjust.x+(pos.x*size.x), orgin_adjust.y-(pos.y*size.y), 0.f));
 
