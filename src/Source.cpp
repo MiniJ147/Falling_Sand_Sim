@@ -85,18 +85,21 @@ int main()
     world_create_block(&blocks, world.ids, world.width, 0, 1, SAND);
     world_create_block(&blocks, world.ids, world.width, 0, 0, SAND);
 
-    world_print_matrix(world.ids, world.width, world.height);
+    //world_print_matrix(world.ids, world.width, world.height);
 
     while (!glfwWindowShouldClose(window))
     {
         glClearColor(0.1, 0.3, 0.5, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        if(glfwGetKey(window,GLFW_KEY_W)==GLFW_PRESS)
+            world_create_block(&blocks, world.ids, world.width, 5, 0, SAND);
+
         for (int i = 0; i<blocks.render_ids.size(); ++i)
             block_render(block_get_data_cell(blocks, blocks.render_ids[i]));
 
         for (int i = 0; i < blocks.tickable_ids.size(); ++i)
-            block_tick(&blocks, blocks.tickable_ids[i], world.ids, world.width);
+            block_tick(&blocks, blocks.tickable_ids[i], world.ids, world.width,world.height);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

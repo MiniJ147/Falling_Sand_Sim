@@ -5,7 +5,7 @@
 #include "world.h"
 #include <glad/glad.h>
 
-glm::vec3 colors[] = { glm::vec3(1.0f,1.0f,1.0f),glm::vec3(1.0f,1.0f,0.0f)};
+glm::vec3 colors[] = { glm::vec3(1.0f,0.0f,0.0f),glm::vec3(1.0f,1.0f,0.0f)};
 
 struct Size
 {
@@ -63,16 +63,20 @@ void block_init(Block* block, U32 matrix_width, U32 matrix_height, U32 size_x, U
 
 	shader = shader_create(pv, pf);
 
-	//declaring these arrays with the size of the world
-	block->pos_size = matrix_width * matrix_height;
-	block->type_size = matrix_width * matrix_height;
+	//declaring these arrays with the size of the 
+	const U32 MATRIX_SIZE = matrix_width * matrix_height;
+	block->pos_size = MATRIX_SIZE;
+	block->type_size = MATRIX_SIZE;
+	block->weight_size = MATRIX_SIZE;
 
 	block->pos = (Vec2f*)malloc(sizeof(Vec2f) * block->pos_size);
 	block->type = (U32*)malloc(sizeof(U32) * block->type_size);
+	block->weight = (U32*)malloc(sizeof(U32) * block->weight_size);
 
 	//setting memory to the null identifier 
 	memset(block->pos, WORLD_NULL, sizeof(Vec2f) * block->pos_size);
 	memset(block->type, WORLD_NULL, sizeof(U32) * block->type_size);
+	memset(block->weight, WORLD_NULL, sizeof(U32) * block->weight_size);
 }
 
 void block_swap(Block block, U32 id_1, U32 id_2)
@@ -84,15 +88,15 @@ void block_swap(Block block, U32 id_1, U32 id_2)
 	*pos_2 = *pos_1;
 	*pos_1 = temp;
 
-	U32* type_1 = (U32*)block_get_data_ptr(block, id_1, RETURN_MODE_TYPE);
+	/*U32* type_1 = (U32*)block_get_data_ptr(block, id_1, RETURN_MODE_TYPE);
 	U32* type_2 = (U32*)block_get_data_ptr(block, id_2, RETURN_MODE_TYPE);
 	U32 _temp = *type_2;
 
 	*type_2 = *type_1;
-	*type_1 = _temp;
+	*type_1 = _temp;*/
 }
 
-void block_create(Block* block, U32 id, Vec2f pos, U32 type)
+void block_create(Block* block, U32 id, Vec2f pos, U32 type, U32 weight)
 {
 	switch (type)
 	{
@@ -119,6 +123,7 @@ void block_create(Block* block, U32 id, Vec2f pos, U32 type)
 	//grabbing the ptr and setting its data to our desired data
 	*(Vec2f*)block_get_data_ptr(*block, id, RETURN_MODE_POS) = pos;
 	*(U32*)block_get_data_ptr(*block, id, RETURN_MODE_TYPE) = type;
+	*(U32*)block_get_data_ptr(*block, id, RETURN_MODE_WEIGHT) = weight;
 }
 
 void* block_get_data_ptr(Block block, U32 id, U32 mode)
@@ -132,7 +137,9 @@ void* block_get_data_ptr(Block block, U32 id, U32 mode)
 	case RETURN_MODE_TYPE:
 		return (void*)(block.type + id);
 		break;
-
+	case RETURN_MODE_WEIGHT:
+		return (void*)(block.weight + id);
+		break;
 	default:
 		return nullptr;
 	}
@@ -140,19 +147,69 @@ void* block_get_data_ptr(Block block, U32 id, U32 mode)
 
 Cell block_get_data_cell(Block block, U32 id)
 {
-	return Cell{*(block.pos+id),*(block.type+id)};
+	return Cell{ *(block.pos + id),*(block.type + id),*(block.weight + id), id};
 }
 
-void block_tick(Block* block, U32 id, U32* matrix, U32 matrix_width)
+Cell block_get_data_cell(Block block, U32* ids, U32 matrix_width, U32 x, U32 y)
+{
+	U32 id = world_get_id_val(ids, matrix_width, x, y);
+	return Cell{ *(block.pos + id),*(block.type + id),*(block.weight + id), id };
+}
+
+bool block_move(Block block, U32* ids, U32 matrix_width, Cell curr, Cell next)
+{
+	if (curr.weight > next.weight)
+	{
+		world_swap(block, ids, matrix_width, curr.pos.x, curr.pos.y, next.pos.x, next.pos.y);
+		LOG("PREFROMED SWAP");
+		return true;
+	}
+	return false;
+}
+
+void block_tick(Block* block, U32 curr_id, U32* ids, U32 matrix_width, U32 matrix_height)
 {
 	//TODO create basic ticking system for now we are just going to print the data of the block below us
-	Cell curr = block_get_data_cell(*block, id);
-	int b = world_get_id_val(matrix, matrix_width,curr.pos.x,curr.pos.y+1);
-	if (block_get_data_cell(*block, b).type == AIR)
-		printf("We can move\n");
-	else
-		printf("We cannot move\n");
+	Cell curr_data = block_get_data_cell(*block, curr_id);
+	U32 curr_type = curr_data.type;
 
+	switch (curr_type)
+	{
+	case SAND:
+		//checking below
+		if (curr_data.pos.y + 1 >= matrix_height)
+			return;
+
+		//move down
+		Cell next_data = block_get_data_cell(*block, ids, matrix_width, curr_data.pos.x, curr_data.pos.y + 1);
+		if (block_move(*block, ids, matrix_width, curr_data, next_data))
+			return;
+
+		if (curr_data.pos.x + 1 >= matrix_width)
+		{
+			if (curr_data.pos.x - 1 < 0)
+				return;
+			
+			//move left
+			next_data = block_get_data_cell(*block, ids, matrix_width, curr_data.pos.x - 1, curr_data.pos.y + 1);
+			block_move(*block, ids, matrix_width, curr_data, next_data);
+			return;
+		}
+
+		//move right
+		next_data = block_get_data_cell(*block, ids, matrix_width, curr_data.pos.x + 1, curr_data.pos.y + 1);
+		if (block_move(*block, ids, matrix_width, curr_data, next_data))
+			return;
+
+		if (curr_data.pos.x - 1 < 0)
+			return;
+
+		//move left
+		next_data = block_get_data_cell(*block, ids, matrix_width, curr_data.pos.x - 1, curr_data.pos.y + 1);
+		block_move(*block, ids, matrix_width, curr_data, next_data);
+
+		break;
+	}
 }
 
 void block_render(Cell c)

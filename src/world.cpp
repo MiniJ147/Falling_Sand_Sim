@@ -1,5 +1,8 @@
 #include "world.h"
 
+//                     AIR  SAND
+U32 block_weights[] = {0,   1};
+
 void world_init(World* world, U32 width, U32 height)
 {
     world->width = width;
@@ -19,7 +22,7 @@ void world_init(World* world, U32 width, U32 height)
 void world_create_block(Block* block, U32* ids, U32 matrix_width, float x, float y, U32 type)
 {
     U32 id = world_get_id_val(ids, matrix_width, x, y);
-    block_create(block, id, { x,y }, type);
+    block_create(block, id, { x,y }, type, block_weights[type]);
 }
 
 void world_swap(Block block, U32* ids, U32 matrix_width, U32 x1, U32 y1, U32 x2, U32 y2)

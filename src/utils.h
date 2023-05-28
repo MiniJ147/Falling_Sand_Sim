@@ -7,7 +7,7 @@ typedef uint16_t U16;
 typedef uint32_t U32;
 typedef uint64_t U64;
 
-#define DEBUG_MODE 1
+#define DEBUG_MODE 0
 
 #if DEBUG_MODE == 1
 #define LOG(x) std::cout << x << std::endl
