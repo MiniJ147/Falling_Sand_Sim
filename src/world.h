@@ -19,17 +19,17 @@ void world_release(World* world);
 //                        U32 x, U32 y, U32 id);
 
 //returns ptr
-U32* world_get_id_ptr(U32* ids, U32 matrix_width, 
-                        U32 x, U32 y);
+U32* world_get_id_ptr(U32* ids, U32 matrix_width,
+    U32 x, U32 y);
 
-U32 world_get_id_val(U32* ids, U32 matrix_width, 
-                        U32 x, U32 y);
+U32 world_get_id_val(U32* ids, U32 matrix_width,
+    U32 x, U32 y);
 
-void world_create_block(Block block, U32* ids, U32 matrix_width,
-                        float x, float y, U32 type);
+void world_create_block(Block* block, U32* ids, U32 matrix_width,
+    float x, float y, U32 type);
 
 void world_swap(Block block, U32* ids, U32 matrix_width,
-             U32 x1, U32 y1, U32 x2, U32 y2);
+    U32 x1, U32 y1, U32 x2, U32 y2);
 
-void world_print_matrix(U32* ids, U32 matrix_width, 
-                        U32 matrix_height);
+void world_print_matrix(U32* ids, U32 matrix_width,
+    U32 matrix_height);

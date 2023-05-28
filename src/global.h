@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 
 struct Global_Data
-{	
+{
 	glm::mat4 projection;
 	GLFWwindow* window;
 	U32 window_width;
